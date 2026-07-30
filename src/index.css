@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  /* This replaces your tailwind.config.js layout settings! */
+  --color-gold: #cca43b;
+  --color-darkBg: #0b0c10;
+  --color-cardBg: #1f2833;
+}
+
+body {
+  background-color: var(--color-darkBg);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
