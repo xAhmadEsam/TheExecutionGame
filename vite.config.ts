@@ -8,4 +8,6 @@ export default defineConfig({
     react(),
     tailwindcss(), // Adds native Tailwind v4 compilation
   ],
+
+  base: '/TheExecutionGame/',
 })
