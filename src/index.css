@@ -45,3 +45,28 @@ body {
 .animate-black-flash {
   animation: blackFlash 1.8s infinite ease-in-out;
 }
+
+/* Black Flash Electric Spark Burst */
+@keyframes blackFlashSparks {
+  0% {
+    box-shadow: 0 0 0px 0px rgba(214, 40, 40, 0), 0 0 0px 0px rgba(0, 0, 0, 0);
+  }
+  20% {
+    box-shadow: 0 0 15px 4px #d62828, 0 0 30px 8px #000;
+    filter: invert(1) contrast(2);
+  }
+  40% {
+    filter: none;
+    box-shadow: -4px -4px 20px #d62828, 4px 4px 20px #2a3c54;
+  }
+  60% {
+    box-shadow: 4px -4px 15px #d62828, -4px 4px 15px #000;
+  }
+  100% {
+    box-shadow: 0 0 10px 2px rgba(214, 40, 40, 0.2);
+  }
+}
+
+.animate-completed-strike:hover {
+  animation: blackFlashSparks 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
