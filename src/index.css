@@ -1,14 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  /* This replaces your tailwind.config.js layout settings! */
-  --color-gold: #cca43b;
-  --color-darkBg: #0b0c10;
-  --color-cardBg: #1f2833;
+  /* Colors carefully extracted from the TEG poster artwork */
+  --color-tegCrimson: #d62828;      /* The intense glowing fire/fan color */
+  --color-tegDarkBg: #05070c;       /* The deep obsidian background shadow tint */
+  --color-tegCardBg: #0f131a;       /* The moody midnight indigo armor tint */
+  --color-tegSteelBlue: #2a3c54;    /* The metallic blue highlights on her garments */
 }
 
 body {
-  background-color: var(--color-darkBg);
+  background-color: var(--color-tegDarkBg);
   color: #ffffff;
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- JUJUTSU KAISEN CUSTOM ANIMATIONS --- */
+
+/* 1. Cursed Energy Ambient Halo Wave */
+@keyframes cursedFlame {
+  0%, 100% {
+    box-shadow: 0 0 15px -3px rgba(214, 40, 40, 0.4), 0 0 6px -2px rgba(42, 60, 84, 0.6);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 25px 2px rgba(214, 40, 40, 0.6), 0 0 12px 1px rgba(42, 60, 84, 0.8);
+    filter: brightness(1.15);
+  }
+}
+
+.animate-cursed-flame {
+  animation: cursedFlame 3s infinite ease-in-out;
+}
+
+/* 2. JJK Black Flash Strike Loader */
+@keyframes blackFlash {
+  0% { transform: scaleX(0); opacity: 0; filter: hue-rotate(0deg); }
+  15% { transform: scaleX(1); opacity: 1; filter: cubic-bezier(0.1, 0.9, 0.2, 1); }
+  30% { filter: invert(1) contrast(3); }
+  45% { filter: none; }
+  100% { transform: scale(1.05); opacity: 0; }
+}
+
+.animate-black-flash {
+  animation: blackFlash 1.8s infinite ease-in-out;
 }

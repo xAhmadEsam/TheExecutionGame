@@ -1,7 +1,7 @@
 export interface Player {
   id: string;
-  ign: string; // In-Game Name
-  role: "EXP" | "Gold" | "Mid" | "Roamer" | "Jungler" | "Substitute";
+  ign: string;
+  role: 'EXP' | 'Gold' | 'Mid' | 'Roamer' | 'Jungler' | 'Substitute';
 }
 
 export interface Team {
@@ -9,17 +9,21 @@ export interface Team {
   name: string;
   logoUrl?: string;
   players: Player[];
+  points: number;
+  ws: number; // Win streak
+  ls: number; // Loss streak
+  arr: 'YES' | 'NO'; // Right to add a rule
+  spatialDomain?: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic'; // Shinku's Domains
 }
 
 export interface Match {
   id: string;
-  stage: "Quarterfinals" | "Semifinals" | "Grand Finals";
-  team1: Team;
-  team2: Team;
+  isRevenge: boolean; 
+  team1Id: string;
+  team2Id: string;
   team1Score?: number;
   team2Score?: number;
-  status: "Scheduled" | "Live" | "Completed";
-  matchTime: string;
+  status: 'Scheduled' | 'Live' | 'Completed';
+  matchIsDone: boolean;
   winnerId?: string;
 }
-
