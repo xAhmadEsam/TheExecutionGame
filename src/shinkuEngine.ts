@@ -28,7 +28,7 @@ export const runShinkuRegrouping = (teams: Team[]): Team[] => {
 
   return sortedTeams.map((team, index) => {
     let domain: Team["spatialDomain"] = "Epic";
-    if (index < size) domain = "Mythical Glory";
+    if (index < size) domain = "Glory";
     else if (index < size * 2) domain = "Mythic";
     else if (index < size * 3) domain = "Legend";
 
@@ -52,7 +52,7 @@ export const generateNextRoundMatches = (groupedTeams: Team[]) => {
     "Epic",
     "Legend",
     "Mythic",
-    "Mythical Glory",
+    "Glory",
   ];
   const nextMatches: any[] = [];
 

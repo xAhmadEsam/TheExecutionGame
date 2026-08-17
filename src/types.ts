@@ -13,7 +13,7 @@ export interface Team {
   ws: number; // Win streak
   ls: number; // Loss streak
   arr: 'YES' | 'NO'; // Right to add a rule
-  spatialDomain?: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic'; // Shinku's Domains
+  spatialDomain?: 'Glory' | 'Mythic' | 'Legend' | 'Epic'; // Shinku's Domains
 }
 
 export interface Match {

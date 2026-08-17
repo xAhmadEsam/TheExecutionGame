@@ -100,7 +100,7 @@ function App() {
                     <td className="p-4 text-right">
                       <span
                         className={`px-2.5 py-1 rounded text-[10px] font-black tracking-wider uppercase ${
-                          team.spatialDomain === "Mythical Glory"
+                          team.spatialDomain === "Glory"
                             ? "bg-tegCrimson/10 text-tegCrimson border border-tegCrimson/30"
                             : team.spatialDomain === "Mythic"
                               ? "bg-indigo-950 text-indigo-400 border border-indigo-500/20"
