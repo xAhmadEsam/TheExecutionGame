@@ -13,7 +13,10 @@ export interface Team {
   ws: number; // Win streak
   ls: number; // Loss streak
   arr: 'YES' | 'NO'; // Right to add a rule
-  spatialDomain?: 'Glory' | 'Mythic' | 'Legend' | 'Epic'; // Shinku's Domains
+  spatialDomain?: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic';
+  floor?: 'Tengoku' | 'Chi' | "Shin'en";
+  isEliminated: boolean;
+  eliminationReason?: string;
 }
 
 export interface Match {
