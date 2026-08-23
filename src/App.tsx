@@ -232,7 +232,7 @@ function App() {
             <span className="w-1.5 h-6 bg-tegCrimson rounded-full"></span> UPCOMING EXECUTION MATCHUPS
           </h2>
           
-          <div className="flex flex-col-reverse gap-4 max-w-xl mx-auto">
+          <div className="flex flex-col gap-4 max-w-xl mx-auto">
             {nextRoundMatches.length === 0 ? (
               <div className="p-12 bg-tegCardBg text-center text-gray-500 font-mono text-xs rounded-xl border border-tegSteelBlue/20">
                 🛑 NO COMPATIBLE INTRA-FLOOR MATCHES GENERATED YET.

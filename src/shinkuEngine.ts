@@ -20,109 +20,76 @@ const seededShuffle = <T>(array: T[], seedValue: number): T[] => {
 };
 
 export const runShinkuRegrouping = (teams: Team[]): Team[] => {
-  let processed = teams.map(team => {
+  const processed = teams.map(team => {
     let isEliminated = team.isEliminated;
     let eliminationReason = team.eliminationReason;
 
+    // Direct check for the -50 points automatic fallback rule
     if (team.points <= -50) {
       isEliminated = true;
       eliminationReason = "EXTERMINATED: Points plummeted to -50";
     }
     
     const floor = team.floor || 'Chi';
-    return { ...team, floor, isEliminated, eliminationReason, spatialDomain: undefined as any };
+    return { ...team, floor, isEliminated, eliminationReason };
   });
 
-  const tengokuCount = processed.filter(t => !t.isEliminated && t.floor === 'Tengoku').length;
-  if (tengokuCount >= 3) {
-    processed = processed.map(team => {
-      if (team.floor !== 'Tengoku' && !team.isEliminated) {
-        return {
-          ...team,
-          points: -50,
-          isEliminated: true,
-          eliminationReason: "TERMINATED: 3 Teams reached Tengoku. Lower planes collapsed."
-        };
-      }
-      return team;
-    });
-  }
+  // Assign a mathematical priority number to each floor layer to force separation
+  const floorPriority: Record<string, number> = {
+    'Tengoku': 3,
+    'Chi': 2,
+    "Shin'en": 1
+  };
 
-  const floors: Team['floor'][] = ["Tengoku", "Chi", "Shin'en"];
-  let fullyGroupedTeams: Team[] = [];
+  // Sort teams primarily by their floor tier value, then by active status, then by highest points
+  return processed.sort((a, b) => {
+    const floorA = a.floor || 'Chi';
+    const floorB = b.floor || 'Chi';
 
-  floors.forEach(targetFloor => {
-    let floorTeams = processed.filter(t => t.floor === targetFloor);
-    floorTeams.sort((a, b) => b.points - a.points);
+    // 1. Separate floors completely (Highest priority number stays at the top)
+    if (floorPriority[floorA] !== floorPriority[floorB]) {
+      return floorPriority[floorB] - floorPriority[floorA];
+    }
     
-    const totalInFloor = floorTeams.length;
-    if (totalInFloor > 0) {
-      // FIX: If a floor has 4 or fewer teams, force everyone into Mythical Glory
-      if (totalInFloor <= 4) {
-        floorTeams = floorTeams.map(team => ({ ...team, spatialDomain: 'Mythical Glory' }));
-      } else {
-        const size = Math.ceil(totalInFloor / 4);
-        floorTeams = floorTeams.map((team, index) => {
-          let domain: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic' = 'Epic';
-          if (index < size) domain = 'Mythical Glory';
-          else if (index < size * 2) domain = 'Mythic';
-          else if (index < size * 3) domain = 'Legend';
-          return { ...team, spatialDomain: domain };
-        });
-      }
-    }
-    fullyGroupedTeams = [...fullyGroupedTeams, ...floorTeams];
-  });
-
-  const floorPriority: Record<string, number> = { 'Tengoku': 3, 'Chi': 2, "Shin'en": 1 };
-  return fullyGroupedTeams.sort((a, b) => {
-    if (floorPriority[a.floor] !== floorPriority[b.floor]) {
-      return floorPriority[b.floor] - floorPriority[a.floor];
-    }
+    // 2. If they are on the same floor, push eliminated teams to the bottom of that floor
     if (a.isEliminated !== b.isEliminated) {
       return a.isEliminated ? 1 : -1;
     }
+    
+    // 3. If they are on the same floor and both active, sort by highest points descending
     return b.points - a.points;
   });
 };
 
 export const generateNextRoundMatches = (groupedTeams: Team[]): Match[] => {
   const pointSeed = groupedTeams.reduce((sum, team) => sum + team.points + 120, 0);
-  const floors: Team['floor'][] = ["Shin'en", "Chi", "Tengoku"];
-  const domains: ('Mythical Glory' | 'Mythic' | 'Legend' | 'Epic')[] = ['Epic', 'Legend', 'Mythic', 'Mythical Glory'];
   
-  const nextMatches: any[] = [];
+  // Strict execution tracking order sequence layout
+  const floors: ('Tengoku' | 'Chi' | "Shin'en")[] = ["Tengoku", "Chi", "Shin'en"];
+  const nextMatches: Match[] = [];
 
   floors.forEach(floor => {
-    domains.forEach(domain => {
-      const matchingPool = groupedTeams.filter(t => !t.isEliminated && t.floor === floor && t.spatialDomain === domain);
-      const shuffledTeams = seededShuffle(matchingPool, pointSeed);
-      
-      for (let i = 0; i < shuffledTeams.length; i += 2) {
-        if (shuffledTeams[i] && shuffledTeams[i + 1]) {
-          nextMatches.push({
-            id: `match-${floor}-${domain}-${i}`,
-            team1Id: shuffledTeams[i].id,
-            team2Id: shuffledTeams[i + 1].id,
-            floor: floor,
-            spatialDomain: domain,
-            matchIsDone: false,
-            isAutoWin: false
-          });
-        } else if (shuffledTeams[i] && !shuffledTeams[i + 1]) {
-          // FIX: Catch odd numbers and flag it as an Auto Win/Bye match card
-          nextMatches.push({
-            id: `autowin-${floor}-${domain}-${i}`,
-            team1Id: shuffledTeams[i].id,
-            team2Id: 'AUTOWIN_SYSTEM',
-            floor: floor,
-            spatialDomain: domain,
-            matchIsDone: true, // Auto win counts as instantly complete
-            isAutoWin: true
-          });
-        }
-      }
+    // FIX: Explicitly check for string matches and fallbacks to pass strict type filters
+    const activeTeamsInFloor = groupedTeams.filter(t => {
+      const currentTeamFloor = t.floor || 'Chi';
+      return !t.isEliminated && currentTeamFloor === floor;
     });
+
+    const shuffledTeams = seededShuffle(activeTeamsInFloor, pointSeed);
+    
+    for (let i = 0; i < shuffledTeams.length; i += 2) {
+      if (shuffledTeams[i] && shuffledTeams[i + 1]) {
+        nextMatches.push({
+          id: `match-${floor}-${i}`,
+          team1Id: shuffledTeams[i].id,
+          team2Id: shuffledTeams[i + 1].id,
+          floor: floor,
+          // Fallback domain default parameter mapping
+          spatialDomain: shuffledTeams[i].spatialDomain || 'Mythical Glory',
+          matchIsDone: false
+        });
+      }
+    }
   });
 
   return nextMatches;
