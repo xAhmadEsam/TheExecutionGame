@@ -38,17 +38,6 @@ export const mockTeams: Team[] = [
     players: []
   },
   {
-    id: '4',
-    name: 'Busy Gapping',
-    points: 15,
-    ws: 0,
-    ls: 1,
-    arr: 'YES',
-    floor: "Shin'en",
-    isEliminated: false,
-    players: []
-  },
-  {
     id: '5',
     name: 'Zero nova',
     points: 10,
@@ -104,17 +93,6 @@ export const mockTeams: Team[] = [
     players: []
   },
   {
-    id: '10',
-    name: 'Team Eagles',
-    points: -5,
-    ws: 0,
-    ls: 2,
-    arr: 'NO',
-    floor: "Shin'en",
-    isEliminated: false,
-    players: []
-  },
-  {
     id: '11',
     name: 'Sky Shapers',
     points: -10,
@@ -148,6 +126,17 @@ export const mockTeams: Team[] = [
     players: []
   },
   {
+    id: '4',
+    name: 'Busy Gapping',
+    points: -50,
+    ws: 0,
+    ls: 1,
+    arr: 'YES',
+    floor: "Shin'en",
+    isEliminated: false,
+    players: []
+  },
+  {
     id: '14',
     name: 'Sky Strikers',
     points: -50,
@@ -167,6 +156,17 @@ export const mockTeams: Team[] = [
     arr: 'YES',
     floor: "Shin'en",
     isEliminated: true, // Manually marked as completed elimination
+    players: []
+  },
+  {
+    id: '10',
+    name: 'Team Eagles',
+    points: -50,
+    ws: 0,
+    ls: 2,
+    arr: 'NO',
+    floor: "Shin'en",
+    isEliminated: false,
     players: []
   },
   {
