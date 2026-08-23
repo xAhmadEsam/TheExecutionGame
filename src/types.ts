@@ -21,12 +21,10 @@ export interface Team {
 
 export interface Match {
   id: string;
-  isRevenge: boolean; 
   team1Id: string;
   team2Id: string;
-  team1Score?: number;
-  team2Score?: number;
-  status: 'Scheduled' | 'Live' | 'Completed';
-  matchIsDone: boolean;
-  winnerId?: string;
+  floor: 'Tengoku' | 'Chi' | "Shin'en"; // Add or verify this line
+  spatialDomain: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic';
+  matchIsDone: boolean; 
+  isAutoWin?: boolean;
 }

@@ -20,43 +20,76 @@ const seededShuffle = <T>(array: T[], seedValue: number): T[] => {
 };
 
 export const runShinkuRegrouping = (teams: Team[]): Team[] => {
-  const processed = teams.map(team => {
+  // Step 1: Base validation mapping loop
+  let processed = teams.map(team => {
     let isEliminated = team.isEliminated;
     let eliminationReason = team.eliminationReason;
 
-    // Direct check for the -50 points automatic fallback rule
     if (team.points <= -50) {
       isEliminated = true;
       eliminationReason = "EXTERMINATED: Points plummeted to -50";
     }
     
     const floor = team.floor || 'Chi';
-    return { ...team, floor, isEliminated, eliminationReason };
+    return { ...team, floor, isEliminated, eliminationReason, spatialDomain: undefined as any };
   });
 
-  // Assign a mathematical priority number to each floor layer to force separation
-  const floorPriority: Record<string, number> = {
-    'Tengoku': 3,
-    'Chi': 2,
-    "Shin'en": 1
-  };
+  // Step 2: Tengoku Victory Trigger condition check
+  const tengokuCount = processed.filter(t => !t.isEliminated && t.floor === 'Tengoku').length;
+  if (tengokuCount >= 3) {
+    processed = processed.map(team => {
+      if (team.floor !== 'Tengoku' && !team.isEliminated) {
+        return {
+          ...team,
+          points: -50,
+          isEliminated: true,
+          eliminationReason: "TERMINATED: 3 Teams reached Tengoku. Lower planes collapsed."
+        };
+      }
+      return team;
+    });
+  }
 
-  // Sort teams primarily by their floor tier value, then by active status, then by highest points
-  return processed.sort((a, b) => {
+  // Step 3: Compute Spatial Ranges SEPARATELY for each floor group
+  const floors: Team['floor'][] = ['Tengoku', 'Chi', "Shin'en"];
+  let fullyGroupedTeams: Team[] = [];
+
+  floors.forEach(targetFloor => {
+    let floorTeams = processed.filter(t => t.floor === targetFloor);
+    
+    floorTeams.sort((a, b) => b.points - a.points);
+    
+    const totalInFloor = floorTeams.length;
+    if (totalInFloor > 0) {
+      if (totalInFloor <= 4) {
+        floorTeams = floorTeams.map(team => ({ ...team, spatialDomain: 'Mythical Glory' }));
+      } else {
+        const size = Math.ceil(totalInFloor / 4);
+        floorTeams = floorTeams.map((team, index) => {
+          let domain: 'Mythical Glory' | 'Mythic' | 'Legend' | 'Epic' = 'Epic';
+          
+          if (index < size) domain = 'Mythical Glory';
+          else if (index < size * 2) domain = 'Mythic';
+          else if (index < size * 3) domain = 'Legend';
+
+          return { ...team, spatialDomain: domain };
+        });
+      }
+    }
+    fullyGroupedTeams = [...fullyGroupedTeams, ...floorTeams];
+  });
+
+  const floorPriority: Record<string, number> = { 'Tengoku': 3, 'Chi': 2, "Shin'en": 1 };
+  return fullyGroupedTeams.sort((a, b) => {
     const floorA = a.floor || 'Chi';
     const floorB = b.floor || 'Chi';
 
-    // 1. Separate floors completely (Highest priority number stays at the top)
     if (floorPriority[floorA] !== floorPriority[floorB]) {
       return floorPriority[floorB] - floorPriority[floorA];
     }
-    
-    // 2. If they are on the same floor, push eliminated teams to the bottom of that floor
     if (a.isEliminated !== b.isEliminated) {
       return a.isEliminated ? 1 : -1;
     }
-    
-    // 3. If they are on the same floor and both active, sort by highest points descending
     return b.points - a.points;
   });
 };
@@ -64,32 +97,48 @@ export const runShinkuRegrouping = (teams: Team[]): Team[] => {
 export const generateNextRoundMatches = (groupedTeams: Team[]): Match[] => {
   const pointSeed = groupedTeams.reduce((sum, team) => sum + team.points + 120, 0);
   
-  // Strict execution tracking order sequence layout
+  // Outer layer lists
   const floors: ('Tengoku' | 'Chi' | "Shin'en")[] = ["Tengoku", "Chi", "Shin'en"];
+  // Inner layer lists
+  const domains: ('Mythical Glory' | 'Mythic' | 'Legend' | 'Epic')[] = ["Epic", "Legend", "Mythic", "Mythical Glory"];
+  
   const nextMatches: Match[] = [];
 
   floors.forEach(floor => {
-    // FIX: Explicitly check for string matches and fallbacks to pass strict type filters
-    const activeTeamsInFloor = groupedTeams.filter(t => {
-      const currentTeamFloor = t.floor || 'Chi';
-      return !t.isEliminated && currentTeamFloor === floor;
-    });
+    domains.forEach(domain => {
+      // CRITICAL FIX: Match teams strictly checking BOTH the same Floor and the same Spatial Domain Range!
+      const activeTeamsInPool = groupedTeams.filter(t => {
+        const currentTeamFloor = t.floor || 'Chi';
+        const currentTeamDomain = t.spatialDomain || 'Mythical Glory';
+        return !t.isEliminated && currentTeamFloor === floor && currentTeamDomain === domain;
+      });
 
-    const shuffledTeams = seededShuffle(activeTeamsInFloor, pointSeed);
-    
-    for (let i = 0; i < shuffledTeams.length; i += 2) {
-      if (shuffledTeams[i] && shuffledTeams[i + 1]) {
-        nextMatches.push({
-          id: `match-${floor}-${i}`,
-          team1Id: shuffledTeams[i].id,
-          team2Id: shuffledTeams[i + 1].id,
-          floor: floor,
-          // Fallback domain default parameter mapping
-          spatialDomain: shuffledTeams[i].spatialDomain || 'Mythical Glory',
-          matchIsDone: false
-        });
+      const shuffledTeams = seededShuffle(activeTeamsInPool, pointSeed);
+      
+      for (let i = 0; i < shuffledTeams.length; i += 2) {
+        if (shuffledTeams[i] && shuffledTeams[i + 1]) {
+          nextMatches.push({
+            id: `match-${floor}-${domain}-${i}`,
+            team1Id: shuffledTeams[i].id,
+            team2Id: shuffledTeams[i + 1].id,
+            floor: floor,
+            spatialDomain: domain,
+            matchIsDone: false,
+            isAutoWin: false
+          });
+        } else if (shuffledTeams[i] && !shuffledTeams[i + 1]) {
+          nextMatches.push({
+            id: `autowin-${floor}-${domain}-${i}`,
+            team1Id: shuffledTeams[i].id,
+            team2Id: 'AUTOWIN_SYSTEM',
+            floor: floor,
+            spatialDomain: domain,
+            matchIsDone: true,
+            isAutoWin: true
+          });
+        }
       }
-    }
+    });
   });
 
   return nextMatches;
